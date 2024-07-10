@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="public/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="public/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="public/favicon-16x16.png">
+    <link rel="manifest" href="public/site.webmanifest">
+    <title>Timer</title>
+
+</head>
+
+<body>
+    <div class="overlay"></div>
+    <div class="container">
+
+        <div id="phase">Focus Time</div>
+        <div id="timerCircle">
+            <svg width="250" height="250" viewBox="0 0 250 250">
+                <circle cx="125" cy="125" r="115" fill="none" stroke="rgba(255, 255, 255, 0.2)" stroke-width="10" />
+                <circle cx="125" cy="125" r="115" fill="none" stroke="#ffffff" stroke-width="10"
+                    stroke-dasharray="722.57" stroke-dashoffset="0" id="timerPath" />
+            </svg>
+            <div id="timer">25:00</div>
+        </div>
+        <div class="btn-group">
+            <button id="startBtn">Start</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        <div id="stats">
+            <p>Focus sessions today: <span id="todaySessions">0</span> | Total: <span id="totalSessions">0</span></p>
+        </div>
+        <button id="toggleSettings">Settings</button>
+        <div id="settings" style="display: none;">
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <label for="focusTime">Focus:</label>
+                <input type="number" id="focusTime" min="1" max="60" value="25"> min
+            </div>
+            <div class="setting-item">
+                <label for="shortBreakTime">Short Break:</label>
+                <input type="number" id="shortBreakTime" min="1" max="60" value="5"> min
+            </div>
+            <div class="setting-item">
+                <label for="longBreakTime">Long Break:</label>
+                <input type="number" id="longBreakTime" min="1" max="60" value="20"> min
+            </div>
+            <button id="saveSettings">Save Settings</button>
+            <div id="confirmation">Settings saved successfully!</div>
+            <button id="resetDataBtn">Reset Data</button>
+        </div>
+    </div>
+    <audio id="sound" src="public/A1.mp3"></audio>
+
+<script src="./script.js"></script>
+</body>
+
+</html>
