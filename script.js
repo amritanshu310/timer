@@ -1,4 +1,3 @@
-
 const timer = document.getElementById('timer');
 const phase = document.getElementById('phase');
 const startBtn = document.getElementById('startBtn');
@@ -15,11 +14,8 @@ const settingsDiv = document.getElementById('settings');
 const resetDataBtn = document.getElementById('resetDataBtn');
 const confirmationDiv = document.getElementById('confirmation');
 
-
-
 toggleSettingsBtn.addEventListener('click', () => {
     settingsDiv.style.display = settingsDiv.style.display === 'none' ? 'block' : 'none';
-
 });
 
 let interval;
@@ -37,7 +33,6 @@ let phaseDurations = {
 };
 
 function loadState() {
-
     const currentDate = new Date().toDateString();
     lastSavedDate = localStorage.getItem('lastSavedDate') || currentDate;
 
@@ -57,19 +52,18 @@ function loadState() {
     const savedShortBreakTime = localStorage.getItem('shortBreakTime');
     const savedLongBreakTime = localStorage.getItem('longBreakTime');
 
-    if (savedFocusTime) {
+    if (savedFocusTime && !isNaN(savedFocusTime)) {
         phaseDurations.focus = parseInt(savedFocusTime) * 60;
         document.getElementById('focusTime').value = savedFocusTime;
     }
-    if (savedShortBreakTime) {
+    if (savedShortBreakTime && !isNaN(savedShortBreakTime)) {
         phaseDurations.shortBreak = parseInt(savedShortBreakTime) * 60;
         document.getElementById('shortBreakTime').value = savedShortBreakTime;
     }
-    if (savedLongBreakTime) {
+    if (savedLongBreakTime && !isNaN(savedLongBreakTime)) {
         phaseDurations.longBreak = parseInt(savedLongBreakTime) * 60;
         document.getElementById('longBreakTime').value = savedLongBreakTime;
     }
-
 
     updatePhaseDisplay();
     updateTimer();
@@ -77,13 +71,16 @@ function loadState() {
 }
 
 function saveState() {
-    localStorage.setItem('timeLeft', timeLeft);
-    localStorage.setItem('currentPhase', currentPhase);
-    localStorage.setItem('focusCount', focusCount);
-    localStorage.setItem('todaySessions', todaySessions);
-    localStorage.setItem('totalSessions', totalSessions);
-    localStorage.setItem('lastSavedDate', new Date().toDateString());
-
+    try {
+        localStorage.setItem('timeLeft', timeLeft);
+        localStorage.setItem('currentPhase', currentPhase);
+        localStorage.setItem('focusCount', focusCount);
+        localStorage.setItem('todaySessions', todaySessions);
+        localStorage.setItem('totalSessions', totalSessions);
+        localStorage.setItem('lastSavedDate', new Date().toDateString());
+    } catch (error) {
+        console.error('Error saving state:', error);
+    }
 }
 
 function updateTimer() {
@@ -109,11 +106,15 @@ function updateStats() {
 
 function playSound() {
     sound.currentTime = 0;
-    sound.play().catch(error => console.log('Error playing sound:', error));
+    sound.play().catch(error => {
+        console.log('Error playing sound:', error);
+        // Optionally, you can show a visual notification here
+    });
 }
 
 function startTimer() {
     if (!isRunning) {
+        clearInterval(interval); // Clear any existing interval
         isRunning = true;
         interval = setInterval(() => {
             timeLeft--;
@@ -125,15 +126,14 @@ function startTimer() {
                 switchPhase();
             }
         }, 1000);
-
     }
 }
 
 function switchPhase() {
     if (currentPhase === 'focus') {
-        focusCount++;
-        todaySessions++;
-        totalSessions++;
+        focusCount = Math.max(0, focusCount + 1);
+        todaySessions = Math.max(0, todaySessions + 1);
+        totalSessions = Math.max(0, totalSessions + 1);
         updateStats();
         if (focusCount % 4 === 0) {
             currentPhase = 'longBreak';
@@ -173,7 +173,6 @@ resetBtn.addEventListener('click', () => {
     updatePhaseDisplay();
     updateTimer();
     saveState();
-
 });
 
 saveSettingsBtn.addEventListener('click', () => {
@@ -198,12 +197,10 @@ saveSettingsBtn.addEventListener('click', () => {
     setTimeout(() => {
         confirmationDiv.style.display = 'none';
     }, 3000);
-
 });
 
 resetDataBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
-
         localStorage.clear();
         timeLeft = phaseDurations.focus;
         currentPhase = 'focus';
@@ -215,7 +212,7 @@ resetDataBtn.addEventListener('click', () => {
         clearInterval(interval);
 
         phaseDurations = {
-            focus: 25* 60,
+            focus: 25 * 60,
             shortBreak: 5 * 60,
             longBreak: 20 * 60
         };
@@ -224,15 +221,13 @@ resetDataBtn.addEventListener('click', () => {
         updateTimer();
         updateStats();
 
-        document.getElementById('focusTime').value = 50;
-        document.getElementById('shortBreakTime').value = 10;
-        document.getElementById('longBreakTime').value = 40;
-
+        document.getElementById('focusTime').value = 25;
+        document.getElementById('shortBreakTime').value = 5;
+        document.getElementById('longBreakTime').value = 20;
 
         alert('All data has been reset successfully.');
     }
 });
-
 
 window.addEventListener('beforeunload', saveState);
 
@@ -241,4 +236,3 @@ loadState();
 document.body.addEventListener('click', function () {
     sound.play().then(() => sound.pause()).catch(() => { });
 }, { once: true });
-
