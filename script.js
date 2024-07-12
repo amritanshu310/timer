@@ -108,13 +108,12 @@ function playSound() {
     sound.currentTime = 0;
     sound.play().catch(error => {
         console.log('Error playing sound:', error);
-        // Optionally, you can show a visual notification here
     });
 }
 
 function startTimer() {
     if (!isRunning) {
-        clearInterval(interval); // Clear any existing interval
+        clearInterval(interval);
         isRunning = true;
         interval = setInterval(() => {
             timeLeft--;
@@ -188,20 +187,32 @@ saveSettingsBtn.addEventListener('click', () => {
     localStorage.setItem('shortBreakTime', shortBreakTime);
     localStorage.setItem('longBreakTime', longBreakTime);
 
-    if (!isRunning) {
-        timeLeft = phaseDurations[currentPhase];
-        updateTimer();
+    timeLeft = phaseDurations[currentPhase];
+    updateTimer();
+
+   
+    if (isRunning) {
+        clearInterval(interval);
+        startTimer();
     }
 
     confirmationDiv.style.display = 'block';
     setTimeout(() => {
         confirmationDiv.style.display = 'none';
     }, 3000);
+
+    saveState();
 });
 
 resetDataBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
         localStorage.clear();
+
+        phaseDurations = {
+            focus: 25 * 60,
+            shortBreak: 5 * 60,
+            longBreak: 20 * 60
+        };
         timeLeft = phaseDurations.focus;
         currentPhase = 'focus';
         focusCount = 0;
@@ -211,19 +222,17 @@ resetDataBtn.addEventListener('click', () => {
 
         clearInterval(interval);
 
-        phaseDurations = {
-            focus: 25 * 60,
-            shortBreak: 5 * 60,
-            longBreak: 20 * 60
-        };
-
         updatePhaseDisplay();
         updateTimer();
         updateStats();
 
+
         document.getElementById('focusTime').value = 25;
         document.getElementById('shortBreakTime').value = 5;
         document.getElementById('longBreakTime').value = 20;
+
+   
+        saveState();
 
         alert('All data has been reset successfully.');
     }
