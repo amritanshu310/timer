@@ -206,6 +206,8 @@ saveSettingsBtn.addEventListener('click', () => {
 
 resetDataBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+        clearInterval(interval);
+        isRunning = false;
         localStorage.clear();
 
         phaseDurations = {
