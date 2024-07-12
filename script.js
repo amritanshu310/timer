@@ -1,7 +1,6 @@
 const timer = document.getElementById('timer');
 const phase = document.getElementById('phase');
-const startBtn = document.getElementById('startBtn');
-const pauseBtn = document.getElementById('pauseBtn');
+const startPauseBtn = document.getElementById('startBtn');
 const resetBtn = document.getElementById('resetBtn');
 const sound = document.getElementById('sound');
 
@@ -92,6 +91,9 @@ function updateTimer() {
     const progress = (totalTime - timeLeft) / totalTime;
     const dashOffset = 722.57 * (1 - progress);
     timerPath.style.strokeDashoffset = dashOffset;
+
+    // Update start/pause button text
+    startPauseBtn.textContent = isRunning ? 'Pause' : 'Start';
 }
 
 function updatePhaseDisplay() {
@@ -113,18 +115,19 @@ function playSound() {
 
 function startTimer() {
     if (!isRunning) {
-        clearInterval(interval);
         isRunning = true;
         interval = setInterval(() => {
-            timeLeft--;
-            updateTimer();
-            saveState();
-            if (timeLeft === 0) {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateTimer();
+                saveState();
+            } else {
                 clearInterval(interval);
                 isRunning = false;
                 switchPhase();
             }
         }, 1000);
+        updateTimer(); // Update the UI immediately when starting
     }
 }
 
@@ -134,11 +137,7 @@ function switchPhase() {
         todaySessions = Math.max(0, todaySessions + 1);
         totalSessions = Math.max(0, totalSessions + 1);
         updateStats();
-        if (focusCount % 4 === 0) {
-            currentPhase = 'longBreak';
-        } else {
-            currentPhase = 'shortBreak';
-        }
+        currentPhase = (focusCount % 4 === 0) ? 'longBreak' : 'shortBreak';
     } else {
         currentPhase = 'focus';
     }
@@ -150,17 +149,16 @@ function switchPhase() {
     startTimer();
 }
 
-startBtn.addEventListener('click', () => {
-    if (!isRunning) {
+startPauseBtn.addEventListener('click', () => {
+    if (isRunning) {
+        // If the timer is running, pause it
+        clearInterval(interval);
+        isRunning = false;
+    } else {
+        // If the timer is not running, start it
         startTimer();
     }
-});
-
-pauseBtn.addEventListener('click', () => {
-    clearInterval(interval);
-    isRunning = false;
-    saveState();
-    console.log("Timer paused.");
+    updateTimer(); // Update the UI immediately
 });
 
 resetBtn.addEventListener('click', () => {
@@ -187,13 +185,9 @@ saveSettingsBtn.addEventListener('click', () => {
     localStorage.setItem('shortBreakTime', shortBreakTime);
     localStorage.setItem('longBreakTime', longBreakTime);
 
-    timeLeft = phaseDurations[currentPhase];
-    updateTimer();
-
-   
-    if (isRunning) {
-        clearInterval(interval);
-        startTimer();
+    if (!isRunning) {
+        timeLeft = phaseDurations[currentPhase];
+        updateTimer();
     }
 
     confirmationDiv.style.display = 'block';
@@ -208,8 +202,9 @@ resetDataBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
         clearInterval(interval);
         isRunning = false;
+        
         localStorage.clear();
-
+        
         phaseDurations = {
             focus: 25 * 60,
             shortBreak: 5 * 60,
@@ -220,20 +215,15 @@ resetDataBtn.addEventListener('click', () => {
         focusCount = 0;
         todaySessions = 0;
         totalSessions = 0;
-        isRunning = false;
-
-        clearInterval(interval);
 
         updatePhaseDisplay();
         updateTimer();
         updateStats();
 
-
         document.getElementById('focusTime').value = 25;
         document.getElementById('shortBreakTime').value = 5;
         document.getElementById('longBreakTime').value = 20;
 
-   
         saveState();
 
         alert('All data has been reset successfully.');
